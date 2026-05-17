@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Buddy v1 — Test Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --space: #050810; --gold: #c9a84c; --gold2: #f0c96b; --gold3: #7a5c1e;
+      --glass: rgba(255,255,255,0.04); --text: #e8dfc8; --muted: #7a7060;
+      --success: #5ae0a0; --danger: #e05a5a;
+    }
+    html, body {
+      height: 100%; width: 100%;
+      background: var(--space); color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+    body {
+      display: flex; flex-direction: column;
+      height: 100vh; max-width: 520px; margin: 0 auto;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 55% 25%, rgba(255,255,255,.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 5% 60%, rgba(201,168,76,.2) 0%, transparent 100%);
+    }
+    @keyframes coreBreath {
+      0%,100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.06); filter: brightness(1.15); }
+    }
+    @keyframes dotBounce {
+      0%,80%,100% { transform: translateY(0); opacity: .4; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: .4; }
+    }
+    .fade-up { animation: fadeUp .35s ease both; }
+
+    /* HEADER */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; flex-shrink: 0;
+      background: rgba(5,8,16,.9);
+      border-bottom: 1px solid rgba(201,168,76,.1);
+      backdrop-filter: blur(20px); position: relative; z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .aura-sm {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #f0c96b, #c9a84c 45%, #7a5c1e 80%, #2a1f08 100%);
+      box-shadow: 0 0 12px rgba(201,168,76,.5), 0 0 28px rgba(201,168,76,.2);
+      animation: coreBreath 3.5s ease-in-out infinite; flex-shrink: 0;
+    }
+    .header-title {
+      font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+      color: var(--gold2); line-height: 1;
+    }
+    .header-sub { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: .1em; }
+    .status-wrap { display: flex; align-items: center; gap: 6px; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-dot.busy { background: var(--gold); }
+    .status-label { font-size: 11px; color: var(--muted); }
+
+    /* TEST MODE BANNER */
+    .test-banner {
+      background: rgba(201,168,76,.08);
+      border-bottom: 1px solid rgba(201,168,76,.15);
+      padding: 6px 16px; font-size: 11px; color: var(--gold);
+      text-align: center; flex-shrink: 0; position: relative; z-index: 9;
+      letter-spacing: .05em;
+    }
+
+    /* CHAT BOX */
+    .chat-box {
+      flex: 1; overflow-y: auto; padding: 14px 14px;
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative; z-index: 1; scroll-behavior: smooth;
+    }
+    .chat-box::-webkit-scrollbar { width: 3px; }
+    .chat-box::-webkit-scrollbar-thumb { background: var(--gold3); border-radius: 3px; }
+
+    /* MESSAGES */
+    .msg { display: flex; align-items: flex-start; gap: 8px; }
+    .msg.user-msg { flex-direction: row-reverse; }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+      background: radial-gradient(circle at 35% 35%, #f0c96b, #c9a84c 45%, #7a5c1e);
+      box-shadow: 0 0 10px rgba(201,168,76,.4);
+      animation: coreBreath 3.5s ease-in-out infinite;
+    }
+    .bubble {
+      max-width: 76%; padding: 11px 15px; border-radius: 18px;
+      font-size: 14px; line-height: 1.65;
+    }
+    .buddy-msg .bubble {
+      background: rgba(201,168,76,.09); border: 1px solid rgba(201,168,76,.15);
+      border-bottom-left-radius: 4px;
+    }
+    .user-msg .bubble {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      border-bottom-right-radius: 4px;
+    }
+    .typing-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gold); animation: dotBounce 1.2s ease-in-out infinite; margin: 0 2px;
+    }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
+
+    /* QUICK CHIPS */
+    .quick-bar {
+      display: flex; gap: 8px; padding: 0 14px 10px;
+      overflow-x: auto; flex-shrink: 0; position: relative; z-index: 5;
+    }
+    .quick-bar::-webkit-scrollbar { display: none; }
+    .qchip {
+      padding: 8px 16px; border-radius: 50px; font-size: 12px; white-space: nowrap;
+      border: 1px solid rgba(201,168,76,.25); background: rgba(201,168,76,.06);
+      color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all .2s ease; flex-shrink: 0;
+    }
+    .qchip:active { background: rgba(201,168,76,.2); border-color: rgba(201,168,76,.6); color: var(--gold2); }
+
+    /* INPUT */
+    .input-area {
+      display: flex; gap: 10px; align-items: center;
+      padding: 10px 14px 16px;
+      background: rgba(5,8,16,.85);
+      border-top: 1px solid rgba(201,168,76,.08);
+      backdrop-filter: blur(20px); flex-shrink: 0; position: relative; z-index: 10;
+    }
+    .user-input {
+      flex: 1; background: rgba(255,255,255,.05);
+      border: 1px solid rgba(201,168,76,.2); border-radius: 50px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      padding: 12px 18px; outline: none; transition: all .3s ease;
+      -webkit-appearance: none;
+    }
+    .user-input:focus {
+      border-color: rgba(201,168,76,.5); background: rgba(255,255,255,.07);
+      box-shadow: 0 0 0 3px rgba(201,168,76,.07);
+    }
+    .user-input::placeholder { color: var(--muted); }
+    .user-input:disabled { opacity: .5; }
+    .send-btn {
+      width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #c9a84c, #f0c96b); background-size: 200% 200%;
+      animation: shimmer 4s ease infinite;
+      color: #0a0800; font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(201,168,76,.35); transition: all .2s ease;
+    }
+    .send-btn:active { transform: scale(.92); }
+    .send-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="aura-sm"></div>
+      <div>
+        <div class="header-title">BUDDY</div>
+        <div class="header-sub">YOUR NEW BEST FRIEND</div>
+      </div>
+    </div>
+    <div class="status-wrap">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-label" id="statusLabel">Ready</span>
+    </div>
+  </div>
+
+  <!-- TEST BANNER -->
+  <div class="test-banner">⚡ TEST MODE — No API needed · Simulated responses</div>
+
+  <!-- CHAT BOX -->
+  <div class="chat-box" id="chatBox">
+    <div class="msg buddy-msg fade-up">
+      <div class="avatar"></div>
+      <div class="bubble">
+        Hey! 👑 I'm Buddy — your new best friend.<br/><br/>
+        This is <strong>test mode</strong> — I'm simulating responses so you can confirm everything works before adding API keys.<br/><br/>
+        Type anything and hit Send! 💛
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK CHIPS -->
+  <div class="quick-bar" id="quickBar">
+    <button class="qchip" onclick="useQuick('Motivate me today')">Motivate me 🔥</button>
+    <button class="qchip" onclick="useQuick('I need help focusing')">Help me focus</button>
+    <button class="qchip" onclick="useQuick('I am feeling stressed')">I am stressed</button>
+    <button class="qchip" onclick="useQuick('Give me a tip')">Give me a tip</button>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <input
+      type="text" id="userInput" class="user-input"
+      placeholder="Talk to Buddy..."
+      autocomplete="off" autocorrect="off" spellcheck="false"
+    />
+    <button class="send-btn" id="sendBtn">➤</button>
+  </div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+var busy = false;
+var msgCount = 0;
+
+// ── SIMULATED RESPONSES (no API needed) ───────────────────
+var RESPONSES = [
+  "I hear you! 💛 You're doing better than you think. Every single step forward counts, no matter how small.",
+  "That's what I'm here for! 👑 Let's break this down together. What's the first thing on your mind?",
+  "You've got this! 🔥 Discipline is just doing what needs to be done even when you don't feel like it. Start with one small action right now.",
+  "I understand. Take a breath. 🌙 You don't have to figure everything out today. What's one thing you CAN control right now?",
+  "Great question! ⚡ The best way to stay focused is to eliminate one distraction at a time. What's pulling your attention away the most?",
+  "Remember — every empire started with a single decision. 👑 You already made yours by showing up today.",
+  "Let's think about this together. 💡 What's the outcome you're hoping for? Once we know the destination, we can build the path.",
+  "You're stronger than you feel right now. 💪 The fact that you're talking about it means you haven't given up. That matters.",
+  "Progress over perfection, always. ✨ Even 1% better today is still better. What's one tiny win you can celebrate right now?",
+  "I've got you. 💛 Whatever you're going through, you don't have to face it alone. Talk to me — what's really going on?",
+];
+
+var KEYWORD_RESPONSES = {
+  motivat: "Let's GO! 🔥 You were built for greatness. Today is not the day to play small. Take one bold action in the next 10 minutes — what will it be?",
+  focus:   "Focus mode activated! ⚡ Try this: close everything except what you need right now. Set a 25-minute timer. Just 25 minutes of pure work. Can you do that?",
+  stress:  "Hey, breathe. 🌙 Stress means you care — that's not a bad thing. But let's not let it paralyze you. Name the ONE thing stressing you most right now.",
+  sad:     "I'm really glad you told me. 💛 Sadness is valid. You don't have to perform happiness right now. I'm here — just talk to me.",
+  goal:    "Goals are just dreams with deadlines! 🎯 Let's make yours real. What's the goal? And what's one step you could take TODAY toward it?",
+  help:    "Of course! I'm here for exactly this. 👑 Tell me more — what do you need help with?",
+  tip:     "Here's today's tip 💡: Your morning sets the tone. Before you touch your phone, do ONE productive thing first. Could be exercise, journaling, or reviewing your goals.",
+  code:    "Let's debug this together! 🤖 Share the code or describe the problem — I'll help you work through it step by step.",
+  tired:   "Rest is not laziness. 🌙 Your body and mind need recovery to perform. But if it's more than tiredness — what's draining you?",
+  study:   "Study tip! 📚 Active recall beats passive reading every time. After reading something, close it and write down what you remember. Try it now.",
+};
+
+// ── PICK SMART RESPONSE ────────────────────────────────────
+function pickResponse(text) {
+  var lower = text.toLowerCase();
+  for (var keyword in KEYWORD_RESPONSES) {
+    if (lower.indexOf(keyword) !== -1) {
+      return KEYWORD_RESPONSES[keyword];
+    }
+  }
+  // Rotate through general responses
+  var reply = RESPONSES[msgCount % RESPONSES.length];
+  msgCount++;
+  return reply;
+}
+
+// ── DOM HELPERS ────────────────────────────────────────────
+function setStatus(state, label) {
+  var dot = document.getElementById('statusDot');
+  var lbl = document.getElementById('statusLabel');
+  dot.className = 'status-dot' + (state === 'busy' ? ' busy' : '');
+  lbl.textContent = label || 'Ready';
+}
+
+function setBusy(state) {
+  busy = state;
+  document.getElementById('sendBtn').disabled = state;
+  document.getElementById('userInput').disabled = state;
+  if (!state) document.getElementById('userInput').focus();
+}
+
+function scrollBottom() {
+  var box = document.getElementById('chatBox');
+  box.scrollTop = box.scrollHeight;
+}
+
+function addMessage(role, html) {
+  var box = document.getElementById('chatBox');
+  var row = document.createElement('div');
+  row.className = 'msg fade-up ' + (role === 'user' ? 'user-msg' : 'buddy-msg');
+
+  if (role === 'buddy') {
+    var av = document.createElement('div');
+    av.className = 'avatar';
+    row.appendChild(av);
+  }
+
+  var bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.innerHTML = html;
+  row.appendChild(bub);
+
+  box.appendChild(row);
+  scrollBottom();
+}
+
+function showTyping() {
+  var box = document.getElementById('chatBox');
+  var row = document.createElement('div');
+  row.className = 'msg buddy-msg'; row.id = 'typingRow';
+  var av = document.createElement('div'); av.className = 'avatar'; row.appendChild(av);
+  var bub = document.createElement('div'); bub.className = 'bubble'; bub.style.padding = '14px 18px';
+  bub.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  row.appendChild(bub); box.appendChild(row); scrollBottom();
+}
+
+function removeTyping() {
+  var el = document.getElementById('typingRow');
+  if (el) el.remove();
+}
+
+function useQuick(text) {
+  document.getElementById('userInput').value = text;
+  sendMessage();
+}
+
+// ── SEND MESSAGE ───────────────────────────────────────────
+function sendMessage() {
+  if (busy) return;
+
+  var input = document.getElementById('userInput');
+  var text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+
+  // Hide quick chips
+  var qbar = document.getElementById('quickBar');
+  if (qbar) qbar.style.display = 'none';
+
+  // Show user message
+  addMessage('user', text.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+
+  // Lock UI
+  setBusy(true);
+  setStatus('busy', 'Buddy thinking...');
+  showTyping();
+
+  // Simulate network delay (800ms–1.8s)
+  var delay = 800 + Math.random() * 1000;
+
+  setTimeout(function() {
+    removeTyping();
+    var reply = pickResponse(text);
+    addMessage('buddy', reply);
+    setStatus('ready', 'Ready');
+    setBusy(false); // ← ALWAYS unlocks, no stuck state possible
+  }, delay);
+}
+
+// ── EVENT LISTENERS ────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('userInput');
+  var btn   = document.getElementById('sendBtn');
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  btn.addEventListener('click', sendMessage);
+  input.focus();
+});
+</script>
+</body>
+</html>
